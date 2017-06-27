@@ -121,9 +121,11 @@ def probe_cpu():
             end_user = int(parts[1])
             end_system = int(parts[3])
             end_iowait = int(parts[5])
+            steal_time = int(parts[8])
     yield ('cpu.time.user_seconds_count', percent(end_user, cpu_count))
     yield ('cpu.time.system_seconds_count', percent(end_system, cpu_count))
     yield ('cpu.time.iowait_seconds_count', percent(end_iowait, cpu_count))
+    yield ('cpu.time.steal_time_count', percent(steal_time, cpu_count))
 
 
 def probe_load():
