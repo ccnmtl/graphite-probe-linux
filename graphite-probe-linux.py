@@ -151,12 +151,12 @@ def probe_highstate():
             else:
                 try:
                     succeeded = int(line.split(":")[1].strip())
-                except:
+                except (IndexError, ValueError):
                     pass
         if line.startswith("Failed:"):
             try:
                 failed = int(line.split(":")[1].strip())
-            except:
+            except (IndexError, ValueError):
                 pass
     yield ('highstate.succeeded', succeeded)
     yield ('highstate.failed', failed)
@@ -196,7 +196,7 @@ if __name__ == "__main__":
         sock = socket()
         try:
             sock.connect((args.graphite, args.port))
-        except:
+        except OSError:
             print((
                 "Couldn't connect to %(server)s on port %(port)d, "
                 "is carbon-agent.py running?") % {'server': args.graphite,
