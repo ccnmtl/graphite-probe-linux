@@ -20,10 +20,10 @@ def percent(num, den):
 
 def probe_vm():
     for line in open("/proc/vmstat", "r").readlines():
-        if line.startswith('pswpin'):
+        if str(line).startswith('pswpin'):
             v = split_line(line)[1]
             yield ('vmstat.swap.in', v)
-        if line.startswith('pswpout'):
+        if str(line).startswith('pswpout'):
             v = split_line(line)[1]
             yield ('vmstat.swap.out', v)
 
@@ -61,7 +61,7 @@ def probe_net():
          tx_bytes, tx_packets, tx_errs, tx_drop,
          tx_fifo, tx_frame, tx_compressed, tx_multicast
          ) = pattern.split(line.strip())
-        if not iface.startswith('eth'):
+        if not str(iface).startswith('eth'):
             continue
         yield ("network.%s.receive.byte_count" % iface, rx_bytes)
         yield ("network.%s.receive.packet_count" % iface, rx_packets)
@@ -73,7 +73,7 @@ def probe_disk():
     pattern = re.compile(r'\s+')
     usages = subprocess.check_output("df", shell=True)
     for line in usages.splitlines():
-        if not line.startswith('/'):
+        if not str(line).startswith('/'):
             # ignore tmpfs and headers
             continue
         # device blocks used available percent mount
@@ -91,7 +91,7 @@ def probe_disk():
     # do the same thing for inodes
     usages = subprocess.check_output("df -i", shell=True)
     for line in usages.splitlines():
-        if not line.startswith('/'):
+        if not str(line).startswith('/'):
             # ignore tmpfs and headers
             continue
         # device blocks used available percent mount
@@ -116,7 +116,7 @@ def probe_cpu():
     for line in open("/proc/stat", "r").readlines():
         if pattern.match(line):
             cpu_count += 1
-        if line.startswith('cpu '):
+        if str(line).startswith('cpu '):
             parts = pattern2.split(line.strip())
             end_user = int(parts[1])
             end_system = int(parts[3])
@@ -143,7 +143,7 @@ def probe_highstate():
     failed = 0
     changed = 0
     for line in open("/var/log/highstate.log", "r").readlines():
-        if line.startswith("Succeeded:"):
+        if str(line).startswith("Succeeded:"):
             if 'changed' in line:
                 s, c = line.split("(")
                 succeeded = int(s.split(":")[1].strip())
@@ -153,7 +153,7 @@ def probe_highstate():
                     succeeded = int(line.split(":")[1].strip())
                 except (IndexError, ValueError):
                     pass
-        if line.startswith("Failed:"):
+        if str(line).startswith("Failed:"):
             try:
                 failed = int(line.split(":")[1].strip())
             except (IndexError, ValueError):
