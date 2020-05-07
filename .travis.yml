@@ -1,11 +1,8 @@
 language: python
 python:
   - "2.7"
-  - "3.5"
   - "3.6"
 before_script:
   - pip install flake8
 script:
   - flake8 *.py
-notifications:
-  slack: ccnmtl:GizSNscLWJLldjQrffB8mwgm
