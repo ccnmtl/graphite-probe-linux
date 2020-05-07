@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import re
 import subprocess
 import sys
@@ -20,10 +20,11 @@ def percent(num, den):
 
 def probe_vm():
     for line in open("/proc/vmstat", "r").readlines():
-        if str(line).startswith('pswpin'):
+        line = line.decode('utf-8')
+        if line.startswith('pswpin'):
             v = split_line(line)[1]
             yield ('vmstat.swap.in', v)
-        if str(line).startswith('pswpout'):
+        if line.startswith('pswpout'):
             v = split_line(line)[1]
             yield ('vmstat.swap.out', v)
 
@@ -73,7 +74,8 @@ def probe_disk():
     pattern = re.compile(r'\s+')
     usages = subprocess.check_output("df", shell=True)
     for line in usages.splitlines():
-        if not str(line).startswith('/'):
+        line = line.decode('utf-8')
+        if not line.startswith('/'):
             # ignore tmpfs and headers
             continue
         # device blocks used available percent mount
@@ -91,7 +93,8 @@ def probe_disk():
     # do the same thing for inodes
     usages = subprocess.check_output("df -i", shell=True)
     for line in usages.splitlines():
-        if not str(line).startswith('/'):
+        line = line.decode('utf-8')
+        if not line.startswith('/'):
             # ignore tmpfs and headers
             continue
         # device blocks used available percent mount
@@ -114,9 +117,12 @@ def probe_cpu():
     pattern2 = re.compile(r'\s+')
     (end_user, end_system, end_iowait) = (0, 0, 0)
     for line in open("/proc/stat", "r").readlines():
+        line = line.decode('utf-8')
+
         if pattern.match(line):
             cpu_count += 1
-        if str(line).startswith('cpu '):
+
+        if line.startswith('cpu '):
             parts = pattern2.split(line.strip())
             end_user = int(parts[1])
             end_system = int(parts[3])
@@ -143,7 +149,8 @@ def probe_highstate():
     failed = 0
     changed = 0
     for line in open("/var/log/highstate.log", "r").readlines():
-        if str(line).startswith("Succeeded:"):
+        line = line.decode('utf-8')
+        if line.startswith("Succeeded:"):
             if 'changed' in line:
                 s, c = line.split("(")
                 succeeded = int(s.split(":")[1].strip())
@@ -153,7 +160,7 @@ def probe_highstate():
                     succeeded = int(line.split(":")[1].strip())
                 except (IndexError, ValueError):
                     pass
-        if str(line).startswith("Failed:"):
+        if line.startswith("Failed:"):
             try:
                 failed = int(line.split(":")[1].strip())
             except (IndexError, ValueError):
@@ -166,7 +173,7 @@ def probe_highstate():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--prefix', help='graphite prefix', required=True)
-    parser.add_argument('--graphite', help='carbon host', required=True)
+    parser.add_argument('--graphite', help='carbon host')
     parser.add_argument('--port', help='carbon port',
                         default=2003, type=int)
     parser.add_argument('--debug', help="just print values, don't send",
