@@ -20,7 +20,9 @@ def percent(num, den):
 
 def probe_vm():
     for line in open("/proc/vmstat", "r").readlines():
-        line = line.decode('utf-8')
+        if hasattr(line, 'decode'):
+            line = line.decode('utf-8')
+
         if line.startswith('pswpin'):
             v = split_line(line)[1]
             yield ('vmstat.swap.in', v)
@@ -74,7 +76,9 @@ def probe_disk():
     pattern = re.compile(r'\s+')
     usages = subprocess.check_output("df", shell=True)
     for line in usages.splitlines():
-        line = line.decode('utf-8')
+        if hasattr(line, 'decode'):
+            line = line.decode('utf-8')
+
         if not line.startswith('/'):
             # ignore tmpfs and headers
             continue
@@ -93,7 +97,9 @@ def probe_disk():
     # do the same thing for inodes
     usages = subprocess.check_output("df -i", shell=True)
     for line in usages.splitlines():
-        line = line.decode('utf-8')
+        if hasattr(line, 'decode'):
+            line = line.decode('utf-8')
+
         if not line.startswith('/'):
             # ignore tmpfs and headers
             continue
@@ -117,7 +123,8 @@ def probe_cpu():
     pattern2 = re.compile(r'\s+')
     (end_user, end_system, end_iowait) = (0, 0, 0)
     for line in open("/proc/stat", "r").readlines():
-        line = line.decode('utf-8')
+        if hasattr(line, 'decode'):
+            line = line.decode('utf-8')
 
         if pattern.match(line):
             cpu_count += 1
@@ -149,7 +156,9 @@ def probe_highstate():
     failed = 0
     changed = 0
     for line in open("/var/log/highstate.log", "r").readlines():
-        line = line.decode('utf-8')
+        if hasattr(line, 'decode'):
+            line = line.decode('utf-8')
+
         if line.startswith("Succeeded:"):
             if 'changed' in line:
                 s, c = line.split("(")
