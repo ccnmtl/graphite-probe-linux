@@ -64,7 +64,7 @@ def probe_net():
          tx_bytes, tx_packets, tx_errs, tx_drop,
          tx_fifo, tx_frame, tx_compressed, tx_multicast
          ) = pattern.split(line.strip())
-        if not str(iface).startswith('eth'):
+        if not (str(iface).startswith('eth') or str(iface).startswith('ens')):
             continue
         yield ("network.%s.receive.byte_count" % iface, rx_bytes)
         yield ("network.%s.receive.packet_count" % iface, rx_packets)
@@ -163,7 +163,8 @@ def probe_highstate():
             if 'changed' in line:
                 s, c = line.split("(")
                 succeeded = int(s.split(":")[1].strip())
-                changed = int(c.split("=")[1].strip(")\n"))
+                changed = int(
+                    re.search(r'(?<!un)changed=(\d+)', c).group(1))
             else:
                 try:
                     succeeded = int(line.split(":")[1].strip())
